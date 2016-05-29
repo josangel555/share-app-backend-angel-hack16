@@ -19,19 +19,36 @@ import com.red.user.UserRepository;
 @RequestMapping("/api")
 public class BookController {
 	
-//	@Autowired
-//	private BookRepository bookRepo;
+	@Autowired
+	private BookRepository bookRepo;
 	
 	@Autowired
 	private UserRepository userRepo;
 
 	@RequestMapping("/book/add")
 	public ResponseEntity<String> addBook(@RequestHeader(defaultValue="") String id,
-			@RequestHeader(defaultValue="") String userId,
+			@RequestHeader(defaultValue="") String userName,
 			@RequestHeader(defaultValue="") String authToken,
-			@RequestHeader(defaultValue="") String bookName){
+			@RequestHeader(defaultValue="") String bookName,
+			@RequestHeader(defaultValue="") String bookAuthor,
+			@RequestHeader(defaultValue="") String bookPublisher,
+			@RequestHeader(defaultValue="") String bookCost){
 		
+		Book book = new Book();
+		book.setUserName(userName);
+		book.setBookName(bookName);
+		book.setAuthor(bookAuthor);
+		book.setPublisher(bookPublisher);
 		
+		int cost = 0;
+		try{
+			cost = Integer.parseInt(bookCost);
+		} catch(NumberFormatException e){
+			// ignore
+		}
+		book.setCost(cost);
+		
+		bookRepo.save(book);
 		
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
@@ -44,8 +61,11 @@ public class BookController {
 			@RequestHeader(defaultValue="") String loc,
 			@RequestHeader(defaultValue="") String filter){
 		
-		List<Book> books = new ArrayList<>();
-		fillDummy(books);
+		//List<Book> books = new ArrayList<>();
+		//fillDummy(books);
+		
+		List<Book> books = bookRepo.findAll();
+		
 		if(filter.isEmpty()){
 			
 			List<User> users = userRepo.findAll();
@@ -78,7 +98,7 @@ public class BookController {
 		return new ResponseEntity<>(returnMap, HttpStatus.OK);
 	}
 	
-	private void fillDummy(List<Book> books){
+	public void fillDummy(List<Book> books){
 		books.add(new Book("Alice In Wonderland", "Some Auth 1", "Oriely", 500, "josangel"));
 		books.add(new Book("Sherlock", "Some Auth 2", "Oriely", 500, "josangel"));
 		books.add(new Book("Harry Potter", "Some Auth 3", "Oriely", 500, "josangel"));
